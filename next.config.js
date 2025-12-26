@@ -6,11 +6,11 @@ const nextConfig={
 	async rewrites(){
 		return[
 			{
-				source:'/proxy/:path*',
+				source:'/p/:path*',
 				destination:'/api/proxy/:path*'
 			},
 			{
-				source:'/m3u8/:path*',
+				source:'/m/:path*',
 				destination:'/api/m3u8/:path*'
 			}
 		];
