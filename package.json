@@ -1,0 +1,11 @@
+{
+	"name": "proxy",
+	"version": "1.0.0",
+	"scripts": {
+		"start": "node o.js"
+	},
+	"dependencies": {
+		"http": "^0.0.1-security",
+		"https": "^1.0.0"
+	}
+}
