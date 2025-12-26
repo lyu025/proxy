@@ -1,6 +1,7 @@
-const https = require('https')
+// api/proxy.js - 适用于Vercel Serverless的紧凑版本
 const http = require('http')
-const{URL}=require('url')
+const https = require('https')
+const url = require('url')
 
 const mimeMap = {
 	'.m3u8': 'application/vnd.apple.mpegurl',
@@ -47,7 +48,9 @@ module.exports = async (req, res) => {
 		const mime = mimeMap[ext] || 'application/octet-stream'
 		
 		// 构建Vercel环境中的代理前缀
-		const proxyPrefix = `/proxy?url=`
+		const host = req.headers['x-forwarded-host'] || req.headers.host
+		const proto = req.headers['x-forwarded-proto'] || 'https'
+		const proxyPrefix = `${proto}://${host}/?url=`
 		
 		const options = {
 			method: req.method,
