@@ -1,5 +1,5 @@
-import{NextResponse} from 'next/server';
-import{getFullUrl,isM3U8Content,extractDomain} from '@/lib/utils';
+import {NextResponse} from 'next/server';
+import {getFullUrl,isM3U8Content,extractDomain} from '@/lib/utils';
 
 export const dynamic='force-dynamic';
 export const runtime='edge';
