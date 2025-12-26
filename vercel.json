@@ -1,10 +1,6 @@
 {
 	"functions":{
-		"app/middleware.js":{
-			"maxDuration":60,
-			"memory":1024
-		},
-		"app/api/**/*.js":{
+		"app/p/*.js":{
 			"maxDuration":30,
 			"memory":1024
 		}

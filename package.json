@@ -6,16 +6,18 @@
 		"dev":"next dev",
 		"build":"next build",
 		"start":"next start",
-		"lint":"next lint",
-		"vercel-build":"next build"
+		"lint":"next lint"
 	},
 	"dependencies":{
-		"next":"14.x",
-		"react":"18.x",
-		"react-dom":"18.x",
-		"m3u8-parser":"^4.8.0"
+		"next":"^14.0.0",
+		"react":"^18.2.0",
+		"react-dom":"^18.2.0",
+		"node-fetch":"^3.3.2"
 	},
 	"devDependencies":{
-		"@types/node":"20.x"
+		"@types/node":"^20.0.0",
+		"@types/react":"^18.2.0",
+		"@types/react-dom":"^18.2.0",
+		"typescript":"^5.0.0"
 	}
 }
