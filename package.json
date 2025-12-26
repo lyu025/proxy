@@ -1,13 +1,16 @@
 {
-	"name": "proxy",
-	"version": "1.0.0",
-	"scripts": {
-		"start": "node o.js"
+	"name":"proxy",
+	"version":"1.0.0",
+	"private":true,
+	"scripts":{
+		"dev":"next dev",
+		"build":"next build",
+		"start":"next start",
+		"lint":"next lint"
 	},
-	"dependencies": {
-		"cors": "^2.8.5",
-		"express": "^5.2.1",
-		"http": "^0.0.1-security",
-		"https": "^1.0.0"
+	"dependencies":{
+		"next":"14.x",
+		"react":"18.x",
+		"react-dom":"18.x"
 	}
 }
