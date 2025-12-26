@@ -5,6 +5,8 @@
 		"start": "node o.js"
 	},
 	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^5.2.1",
 		"http": "^0.0.1-security",
 		"https": "^1.0.0"
 	}
