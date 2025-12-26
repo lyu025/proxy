@@ -6,11 +6,16 @@
 		"dev":"next dev",
 		"build":"next build",
 		"start":"next start",
-		"lint":"next lint"
+		"lint":"next lint",
+		"vercel-build":"next build"
 	},
 	"dependencies":{
 		"next":"14.x",
 		"react":"18.x",
-		"react-dom":"18.x"
+		"react-dom":"18.x",
+		"m3u8-parser":"^4.8.0"
+	},
+	"devDependencies":{
+		"@types/node":"20.x"
 	}
 }
