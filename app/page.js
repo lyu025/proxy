@@ -20,11 +20,7 @@ export default function HomePage(){
 					padding:15,
 					borderRadius:6,
 					overflow:'auto'
-				}}>
-{`GET/api/proxy?url=https://example.com/video.mp4
-或
-GET/proxy?url=https://example.com/video.mp4`}
-				</pre>
+				}}>{`GET  /proxy?url=https://example.com/video.mp4`}</pre>
 				
 				<h3>2. M3U8 处理</h3>
 				<pre style={{
@@ -32,11 +28,7 @@ GET/proxy?url=https://example.com/video.mp4`}
 					padding:15,
 					borderRadius:6,
 					overflow:'auto'
-				}}>
-{`GET/api/m3u8?url=https://example.com/playlist.m3u8
-或
-GET/m3u8?url=https://example.com/playlist.m3u8`}
-				</pre>
+				}}>{`GET  /m3u8?url=https://example.com/playlist.m3u8`}</pre>
 				
 				<h3>3. 示例代码</h3>
 				<pre style={{
@@ -47,12 +39,12 @@ GET/m3u8?url=https://example.com/playlist.m3u8`}
 				}}>
 {`//在视频播放器中直接使用
 const m3u8Url=
-	'https://your-vercel-app.vercel.app/m3u8?url='
+	'https://proxy-pied-one.vercel.app/m3u8?url='
 	+encodeURIComponent('原始M3U8链接');
 
 //或者直接代理视频片段
 const videoUrl=
-	'https://your-vercel-app.vercel.app/proxy?url='
+	'https://proxy-pied-one.vercel.app/proxy?url='
 	+encodeURIComponent('原始视频链接');`}
 				</pre>
 				
