@@ -143,22 +143,22 @@ function processM3U8(content,baseUrl,proxyBaseUrl){
 				let processedLine;
 				if(trimmedLine.startsWith('http://')||trimmedLine.startsWith('https://')){
 					//完整 URL
-					processedLine=`${proxyBaseUrl}/proxy?url=${encodeURIComponent(trimmedLine)}`;
+					processedLine=`${proxyBaseUrl}/p?url=${encodeURIComponent(trimmedLine)}`;
 				}else if(trimmedLine.startsWith('//')){
 					//协议相对 URL
 					const fullUrl=`https:${trimmedLine}`;
-					processedLine=`${proxyBaseUrl}/proxy?url=${encodeURIComponent(fullUrl)}`;
+					processedLine=`${proxyBaseUrl}/p?url=${encodeURIComponent(fullUrl)}`;
 				}else{
 					//相对路径
 					try{
 						const fullUrl=new URL(trimmedLine,baseUrl).toString();
-						processedLine=`${proxyBaseUrl}/proxy?url=${encodeURIComponent(fullUrl)}`;
+						processedLine=`${proxyBaseUrl}/p?url=${encodeURIComponent(fullUrl)}`;
 					}catch{
 						//如果转换失败，尝试拼接
 						const separator=baseUrl.endsWith('/')?'':'/';
 						const path=trimmedLine.startsWith('/')?trimmedLine.substring(1):trimmedLine;
 						const fullUrl=`${baseUrl}${separator}${path}`;
-						processedLine=`${proxyBaseUrl}/proxy?url=${encodeURIComponent(fullUrl)}`;
+						processedLine=`${proxyBaseUrl}/p?url=${encodeURIComponent(fullUrl)}`;
 					}
 				}
 				processedLines.push(processedLine);
