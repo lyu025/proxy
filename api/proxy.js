@@ -57,10 +57,6 @@ module.exports = async (req, res) => {
 			headers: {
 				...req.headers,
 				host: urlObj.host,
-				origin: undefined,
-				referer: undefined,
-				'x-forwarded-for': undefined,
-				'x-forwarded-proto': undefined
 			}
 		}
 		
