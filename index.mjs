@@ -8,7 +8,7 @@ const NODE_TLS_REJECT_UNAUTHORIZED=process.env.NODE_TLS_REJECT_UNAUTHORIZED||'0'
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=NODE_TLS_REJECT_UNAUTHORIZED;
 
 const caStore=CAService.loadCustomCAs();
-const m3u8_rewriter=new M3U8Rewriter(`http://localhost:${PROXY_PORT}`);
+const m3u8_rewriter=new M3U8Rewriter(`/`);
 
 const server=http.createServer(async(req,res)=>{
 	res.setHeader('Access-Control-Allow-Origin','*');
@@ -99,6 +99,7 @@ function handle_home(req,res){
 </html>`;
 	res.end(html);
 }
+
 async function handle_fetch(req,res,url){
 	const target_param=url.searchParams.get('u');
 	if(!target_param){
@@ -177,8 +178,8 @@ async function handle_fetch(req,res,url){
 		
 		//获取响应头
 		const response_headers=headersToObject(processed_response.headers);
-		response_headers['via']='1.1 proxy-server';
-		response_headers['x-proxy-server']='universal-proxy/2.0';
+		response_headers['via']='1.1 proxy';
+		response_headers['x-proxy-server']='proxy/2.0';
 		response_headers['x-proxy-time']=`${fetch_time}ms`;
 		delete response_headers['content-security-policy'];
 		delete response_headers['x-frame-options'];
