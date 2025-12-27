@@ -239,6 +239,7 @@ async function to_fetch(req,res,url){
 		response_headers['x-proxy-time']=`${fetch_time}ms`;
 		delete response_headers['content-security-policy'];
 		delete response_headers['x-frame-options'];
+		delete response_headers['location'];
 		const content_type=response_headers['content-type']||'';
 		const is_m3u8=isM3U8ContentType(content_type);
 		if(is_m3u8){
@@ -274,7 +275,7 @@ async function to_fetch(req,res,url){
 	}
 }
 async function stream_response(res,fetch_response,headers){
-	res.writeHead(fetch_response.status,headers);
+	res.writeHead(fetch_response.status==301?200:fetch_response.status,headers);
 	const reader=fetch_response.body.getReader();
 	let total_bytes=0;
 	try{
