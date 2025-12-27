@@ -1,23 +1,17 @@
 {
 	"name":"proxy",
-	"version":"1.0.0",
-	"private":true,
+	"version":"2.0.0",
+	"type":"module",
+	"main":"index.mjs",
 	"scripts":{
-		"dev":"next dev",
-		"build":"next build",
-		"start":"next start",
-		"lint":"next lint"
+		"start":"node index.mjs",
+		"dev":"NODE_TLS_REJECT_UNAUTHORIZED=0 node --no-warnings index.mjs",
+		"test":"curl \"http://localhost:4000/o?u=https%3A%2F%2Fhttpbin.org%2Fgzip\""
 	},
 	"dependencies":{
-		"next":"^14.0.0",
-		"react":"^18.2.0",
-		"react-dom":"^18.2.0",
-		"node-fetch":"^3.3.2"
+		"undici":"^6.8.2"
 	},
-	"devDependencies":{
-		"@types/node":"^20.0.0",
-		"@types/react":"^18.2.0",
-		"@types/react-dom":"^18.2.0",
-		"typescript":"^5.0.0"
+	"engines":{
+		"node":">=18.0.0"
 	}
 }
