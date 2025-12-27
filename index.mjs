@@ -6,8 +6,10 @@ import{createFetchOptions,isM3U8ContentType,headersToObject,readRequestBody,hand
 const PROXY_PORT=process.env.PROXY_PORT||4000;
 const NODE_TLS_REJECT_UNAUTHORIZED=process.env.NODE_TLS_REJECT_UNAUTHORIZED||'0';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=NODE_TLS_REJECT_UNAUTHORIZED;
+
 const caStore=CAService.loadCustomCAs();
 const m3u8_rewriter=new M3U8Rewriter(`http://localhost:${PROXY_PORT}`);
+
 const server=http.createServer(async(req,res)=>{
 	res.setHeader('Access-Control-Allow-Origin','*');
 	res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,DELETE,OPTIONS,HEAD,PATCH');
@@ -20,7 +22,7 @@ const server=http.createServer(async(req,res)=>{
 	}
 	let url;
 	try{
-		const base_url=`http://${req.headers.host||`localhost:${PROXY_PORT}`}`;
+		const base_url=`https://${req.headers.host}`;
 		url=new URL(req.url,base_url);
 	}catch(error){
 		res.writeHead(400,{'Content-Type':'application/json'});
@@ -28,9 +30,8 @@ const server=http.createServer(async(req,res)=>{
 		return;
 	}
 	const pathname=url.pathname;
-	console.log(`[${new Date().toISOString()}]${req.method}${pathname}`);
 	if(pathname.startsWith('/o')){
-		await to_fetch(req,res,url);
+		await handle_fetch(req,res,url);
 	}else if(pathname==='/health'){
 		handle_health(req,res);
 	}else if(pathname==='/'){
@@ -39,6 +40,7 @@ const server=http.createServer(async(req,res)=>{
 		res.writeHead(404,{'Content-Type':'text/plain'}).end('Not Found');
 	}
 });
+
 function handle_health(req,res){
 	res.writeHead(200,{
 		'Content-Type':'application/json',
@@ -47,7 +49,7 @@ function handle_health(req,res){
 	res.end(JSON.stringify({
 		status:'ok',
 		timestamp:new Date().toISOString(),
-		service:'proxy-server',
+		service:'proxy',
 		version:'2.0.0',
 		port:PROXY_PORT,
 		tls_enabled:NODE_TLS_REJECT_UNAUTHORIZED!=='0',
@@ -62,7 +64,7 @@ function handle_home(req,res){
 	const html=`<!DOCTYPE html>
 <html>
 <head>
-	<title>Universal Proxy Server</title>
+	<title>Proxy Server</title>
 	<meta charset="utf-8">
 	<style>
 		body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;background:#f5f5f5;}
@@ -73,7 +75,7 @@ function handle_home(req,res){
 	</style>
 </head>
 <body>
-	<h1>Universal Proxy Server</h1>
+	<h1>Proxy Server</h1>
 	<div class="example">
 		<h3>使用方式</h3>
 		<p>GET <code>/o?u=URL</code></p>
@@ -91,14 +93,13 @@ function handle_home(req,res){
 		<div class="code">GET /health</div>
 	</div>
 	<p style="margin-top:30px;color:#666;">
-		服务器运行在端口: <strong>${PROXY_PORT}</strong><br>
 		TLS验证: <strong>${NODE_TLS_REJECT_UNAUTHORIZED==='0'?'已禁用':'已启用'}</strong>
 	</p>
 </body>
 </html>`;
 	res.end(html);
 }
-async function to_fetch(req,res,url){
+async function handle_fetch(req,res,url){
 	const target_param=url.searchParams.get('u');
 	if(!target_param){
 		res.writeHead(400,{'Content-Type':'application/json'});
@@ -113,9 +114,7 @@ async function to_fetch(req,res,url){
 		res.end(JSON.stringify({error:'Invalid URL encoding',details:error.message}));
 		return;
 	}
-	console.log(`原始URL参数:${target_url}`);
 	if(!target_url.includes('://')){
-		console.log('URL缺少协议，添加https://');
 		if(target_url.startsWith('//')){
 			target_url='https:'+target_url;
 		}else if(target_url.startsWith('www.')){
@@ -125,13 +124,10 @@ async function to_fetch(req,res,url){
 		}
 	}
 	target_url=target_url.replace(/\s+/g,'').replace(/\\/g,'/');
-	console.log(`处理后的URL:${target_url}`);
 	let parsed_url;
 	try{
 		parsed_url=new URL(target_url);
-		console.log(`URL解析成功:协议=${parsed_url.protocol},主机=${parsed_url.hostname}`);
 	}catch(url_error){
-		console.error(`URL解析失败:${target_url}`,url_error.message);
 		res.writeHead(400,{'Content-Type':'application/json'});
 		res.end(JSON.stringify({
 			error:'Invalid URL format',
@@ -141,7 +137,6 @@ async function to_fetch(req,res,url){
 		}));
 		return;
 	}
-	console.log(`代理请求:${req.method}${target_url}`);
 	try{
 		const options=await createFetchOptions(req,caStore,target_url);
 		if(['POST','PUT','PATCH'].includes(req.method.toUpperCase())){
@@ -157,14 +152,11 @@ async function to_fetch(req,res,url){
 		}
 		const start_time=Date.now();
 		let original_response;
-		console.log(`开始请求:${target_url}`);
 		try{
 			original_response=await fetch(target_url,options);
 		}catch(fetch_error){
-			console.log(`请求失败:${fetch_error.message}`);
 			if(target_url.startsWith('https://')){
 				const http_url=target_url.replace('https://','http://');
-				console.log(`尝试HTTP:${http_url}`);
 				try{
 					original_response=await fetch(http_url,options);
 					target_url=http_url;
@@ -176,13 +168,10 @@ async function to_fetch(req,res,url){
 			}
 		}
 		const fetch_time=Date.now()-start_time;
-		console.log(`目标响应:${original_response.status}${original_response.statusText}(${fetch_time}ms)`);
-		
 		//处理压缩内容（如果需要）
 		let processed_response=original_response;
 		const content_encoding=original_response.headers.get('content-encoding');
 		if(content_encoding&&content_encoding!=='identity'){
-			console.log(`处理压缩内容:${content_encoding}`);
 			processed_response=await handleCompressedResponse(original_response);
 		}
 		
@@ -207,9 +196,7 @@ async function to_fetch(req,res,url){
 				response_headers['content-length']=Buffer.byteLength(rewritten).toString();
 				res.writeHead(processed_response.status,response_headers);
 				res.end(rewritten);
-				console.log(`M3U8重写完成:${rewritten.length}字节`);
 			}catch(m3u8_error){
-				console.error('M3U8处理失败:',m3u8_error.message);
 				//回退到原始响应
 				await stream_response(res,processed_response,response_headers);
 			}
@@ -218,8 +205,6 @@ async function to_fetch(req,res,url){
 			await stream_response(res,processed_response,response_headers);
 		}
 	}catch(error){
-		console.error('代理请求失败:',error.message);
-		console.error('错误类型:',error.constructor.name);
 		res.writeHead(502,{
 			'Content-Type':'application/json',
 			'Access-Control-Allow-Origin':'*'
@@ -234,23 +219,18 @@ async function to_fetch(req,res,url){
 		res.end(JSON.stringify(error_response,null,2));
 	}
 }
-/**
- * 安全的流式传输
- */
+
+/* 安全的流式传输 */
 async function stream_response(res,fetch_response,headers){
-	console.log('开始流式传输...');
 	//发送头部
 	res.writeHead(fetch_response.status,headers);
-	
 	//使用可读流
 	const reader=fetch_response.body.getReader();
 	let total_bytes=0;
-	
 	try{
 		while(true){
 			const{done,value}=await reader.read();
 			if(done){
-				console.log(`传输完成:${total_bytes}字节`);
 				res.end();
 				break;
 			}
@@ -258,30 +238,24 @@ async function stream_response(res,fetch_response,headers){
 			res.write(value);
 		}
 	}catch(error){
-		console.error('流传输错误:',error.message);
 		if(!res.headersSent)res.writeHead(500);
 		res.end();
 	}finally{
 		reader.releaseLock();
 	}
 }
+
 server.listen(PROXY_PORT,'0.0.0.0',()=>{
 	console.log('='.repeat(60));
 	console.log('🚀 Universal Proxy Server');
 	console.log('='.repeat(60));
-	console.log(`📡 地址:http://localhost:${PROXY_PORT}`);
-	console.log(`🔧 端口:${PROXY_PORT}`);
-	console.log(`🔐 TLS验证:${NODE_TLS_REJECT_UNAUTHORIZED==='0'?'禁用':'启用'}`);
-	console.log(`📊 健康检查:http://localhost:${PROXY_PORT}/health`);
-	console.log(`🔗 代理端点:http://localhost:${PROXY_PORT}/o?u={url}`);
+	console.log(`📡 地址: https://proxy-hy47.onrender.com`);
+	console.log(`🔐 TLS验证: ${NODE_TLS_REJECT_UNAUTHORIZED==='0'?'禁用':'启用'}`);
+	console.log(`📊 健康检查: /health`);
+	console.log(`🔗 代理端点: /o?u={url}`);
 	console.log(`⚠️ Response处理:已修复body复用问题`);
-	if(CAService.hasCertificatesLoaded()){
-		console.log('✅ 自定义证书已加载');
-	}else{
-		console.log('ℹ️ 未加载自定义证书');
-	}
+	CAService.hasCertificatesLoaded();
 	console.log('='.repeat(60));
-	console.log('等待请求...\n');
 });
 const shutdown=(signal)=>{
 	console.log(`\n收到${signal}信号，正在关闭服务器...`);
